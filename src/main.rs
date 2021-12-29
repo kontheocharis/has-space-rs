@@ -8,7 +8,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 struct SpaceQueryEntry {
     index: i32,
-    focused: i32,
+    #[serde(rename = "has-focus")]
+    focused: bool,
 }
 
 fn main() {
@@ -38,10 +39,16 @@ fn main() {
     let spaces: Vec<SpaceQueryEntry> = serde_json::from_slice(&stdout).expect("Got invalid JSON");
 
     let current = spaces
-            .iter()
-            .enumerate()
-            .find_map(|(i, x)| if x.focused == 1 { Some(i as isize) } else { None })
-            .expect("Was expecting to find one space which is focused");
+        .iter()
+        .enumerate()
+        .find_map(|(i, x)| {
+            if x.focused {
+                Some(i as isize)
+            } else {
+                None
+            }
+        })
+        .expect("Was expecting to find one space which is focused");
 
     let next = current + change;
     if next >= 0 && next < spaces.len() as isize {
